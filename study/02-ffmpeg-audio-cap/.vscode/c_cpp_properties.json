@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "E:/Code/ffmpeg/ffmpeg-4.3.2-2021-02-27-full_build-shared/**",
+                "E:/Code/SDL2/SDL2-2.0.16/x86_64-w64-mingw32/**",
+                "D:/Software/Qt5.14.2/5.14.2/mingw73_64/include/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "D:/Software/Qt5.14.2/Tools/mingw730_64/bin/gcc.exe",
+            "cStandard": "c17",
+            "intelliSenseMode": "windows-gcc-x86",
+            "cppStandard": "gnu++11"
+        }
+    ],
+    "version": 4
+}
