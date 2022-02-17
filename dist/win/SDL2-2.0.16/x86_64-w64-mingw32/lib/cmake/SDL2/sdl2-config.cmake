@@ -1,6 +1,6 @@
 # sdl2 cmake project-config input for ./configure scripts
 
-set(prefix "/opt/local/x86_64-w64-mingw32") 
+set(prefix "E:/FlushBonading/gitee/audio_video_study_on_ffmpeg_sdl/dist/win/SDL2-2.0.16/x86_64-w64-mingw32") 
 set(exec_prefix "${prefix}")
 set(libdir "${exec_prefix}/lib")
 set(includedir "${prefix}/include")
