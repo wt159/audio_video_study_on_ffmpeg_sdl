@@ -24,6 +24,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    endif()
 #endif()
 
+set(FFMEPG_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../dist/win/ffmpeg-4.3.2-2021-02-27-full_build-shared)
+set(INC_DIR ${FFMEPG_PATH}/include)
+set(LINK_DIR ${FFMEPG_PATH}/bin ${FFMEPG_PATH}/lib)
+
+include_directories("${INC_DIR}")
+link_directories("${LINK_DIR}")
+
+add_compile_options("-static")
+
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 if(ANDROID)
@@ -37,9 +46,15 @@ else()
   add_executable(05-audio-resample
     main.cpp
     mainwindow.cpp
+    audiothread.cpp
+    ffmpegs.cpp
+    audiothread.h
+    ffmpegs.h
     mainwindow.h
     mainwindow.ui
   )
 endif()
 
-target_link_libraries(05-audio-resample PRIVATE Qt5::Widgets)
+target_link_libraries(05-audio-resample -static Qt5::Widgets
+  avutil swresample
+)
