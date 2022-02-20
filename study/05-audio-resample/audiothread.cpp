@@ -35,8 +35,8 @@ void AudioThread::run() {
     ras1.chLayout = AV_CH_LAYOUT_STEREO;
 
     ResampleAudioSpec ras2;
-    ras2.filename = "E:\\FlushBonading\\gitee\\audio_video_study_on_ffmpeg_sdl\\samples\\48000_f32le_1.pcm";
-    ras2.sampleFmt = AV_SAMPLE_FMT_FLT;
+    ras2.filename = "E:\\FlushBonading\\gitee\\audio_video_study_on_ffmpeg_sdl\\samples\\48000_fltp_1.pcm";
+    ras2.sampleFmt = AV_SAMPLE_FMT_FLTP;
     ras2.sampleRate = 48000;
     ras2.chLayout = AV_CH_LAYOUT_MONO;
 

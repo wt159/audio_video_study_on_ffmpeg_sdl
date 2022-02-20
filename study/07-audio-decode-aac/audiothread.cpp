@@ -21,11 +21,12 @@ AudioThread::~AudioThread() {
 }
 
 void AudioThread::run() {
-    AudioEncodeSpec in;
-    in.filename = "./../48000_fltp_1.pcm";
-    in.sampleRate = 48000;
-    in.sampleFmt = AV_SAMPLE_FMT_FLTP;
-    in.chLayout = AV_CH_LAYOUT_MONO;
+    AudioDecodeSpec out;
+    out.filename = "./out.pcm";
 
-    FFmpegs::aacEncode(in, "./out.aac");
+    FFmpegs::aacDecode("./../../06-audio-encode-aac/build/out.aac", out);
+
+    qDebug() << "采样率：" << out.sampleRate;
+    qDebug() << "采样格式：" << av_get_sample_fmt_name(out.sampleFmt);
+    qDebug() << "声道数：" << av_get_channel_layout_nb_channels(out.chLayout);
 }

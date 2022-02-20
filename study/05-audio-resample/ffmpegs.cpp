@@ -216,3 +216,39 @@ end:
 //    free(ptr);
 //    ptr = nullptr;
 }
+
+#if 0
+void myResampleAudio(MyResampleAudioSpec& in, MyResampleAudioSpec& out)
+{
+    myResampleAudio(in.filename, in.sampleRate, in.sampleFmt, in.channels,
+                    out.filename, out.sampleRate, out.sampleFmt, out.channels);
+}
+void myResampleAudio(const char* inFileName, int inSampleRate, AVSampleFormat inSampleFmt, int inChannels,
+                    const char* outFileName, int outSampleRate, AVSampleFormat outFmt, int outChannels)
+{
+    QFile inFile(inFileName);
+    QFile outFile(outFileName);
+
+    uint8_t **inData = nullptr;
+    int inLineSize = 0;
+    int inChLayout = av_get_default_channel_layout(inChannels);
+    int inChs = inChannels;
+    int inBytesPerSample = inChs * av_get_bytes_per_sample(inSampleFmt);
+    int inSamples = 1024;
+    int len = 0;
+
+    uint8_t **outData = nullptr;
+    int outLineSize = 0;
+    int outChs = outChannels;
+    int outBytesPerSample = outChs * av_get_bytes_per_sample(outFmt);
+    int outSamples = av_rescale_rnd(outSampleRate, inSamples, inSampleRate, AV_ROUND_UP);
+
+    qDebug() << "输入缓冲区:" << inSampleRate << " " << inSamples;
+    qDebug() << "输出缓冲区:" << outSampleRate << " " << outSamples;
+
+    int ret = 0;
+
+    SwrContext *ctx = swr_alloc_set_opts(nullptr,
+                                        );
+}
+#endif

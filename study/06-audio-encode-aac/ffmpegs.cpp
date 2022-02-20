@@ -70,6 +70,8 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
     QFile inFile(in.filename);
     QFile outFile(outFilename);
 
+    qDebug() << "codec config:" << avcodec_configuration();
+
     // 返回结果
     int ret = 0;
 
