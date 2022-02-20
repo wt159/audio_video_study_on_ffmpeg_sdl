@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(6-aac-encode LANGUAGES CXX)
+project(16-aac-encode LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -35,9 +35,6 @@ add_compile_options("-static")
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-aux_source_directory(. DIR_SRCS)
-include_directories("${PROJECT_SOURCE_DIR}")
-
 if(ANDROID)
   add_library(${PROJECT_NAME} SHARED
     main.cpp
@@ -47,7 +44,13 @@ if(ANDROID)
   )
 else()
   add_executable(${PROJECT_NAME}
-    ${DIR_SRCS}
+    main.cpp
+    mainwindow.cpp
+    audiothread.cpp
+    ffmpegs.cpp
+    audiothread.h
+    ffmpegs.h
+    mainwindow.h
     mainwindow.ui
   )
 endif()

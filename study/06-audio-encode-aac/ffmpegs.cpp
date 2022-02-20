@@ -23,6 +23,7 @@ static int check_sample_fmt(const AVCodec *codec,
     while (*p != AV_SAMPLE_FMT_NONE) {
 //        qDebug() << av_get_sample_fmt_name(*p);
         if (*p == sample_fmt) return 1;
+        qDebug() << "the coder fmt : " << av_get_sample_fmt_name(*p);
         p++;
     }
     return 0;
@@ -101,6 +102,7 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
     if (!check_sample_fmt(codec, in.sampleFmt)) {
         qDebug() << "unsupported sample format"
                  << av_get_sample_fmt_name(in.sampleFmt);
+        qDebug("codec name[%s],long_name[%s]", codec->name, codec->long_name);
         return;
     }
 
