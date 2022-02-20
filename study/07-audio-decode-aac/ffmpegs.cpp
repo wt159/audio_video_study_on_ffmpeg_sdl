@@ -127,7 +127,6 @@ void FFmpegs::aacDecode(const char *inFilename,
     }
     qDebug() << "5.av_frame_alloc suc";
     
-    av_opt_find();
     // 打开解码器
     ret = avcodec_open2(ctx, codec, nullptr);
     if (ret < 0) {
