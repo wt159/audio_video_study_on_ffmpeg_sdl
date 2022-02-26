@@ -64,6 +64,60 @@ static int encode(AVCodecContext *ctx,
     }
 }
 
+void showAVCodecSupportedInfo(const AVCodec *codec)
+{
+    qDebug() << __func__ << ":start";
+    const AVRational *frameRates = codec->supported_framerates;
+    if(frameRates != nullptr) {
+        qDebug() << "supported frame rates:";
+        for(;(frameRates->num != 0 && frameRates->den != 0); frameRates++) {
+            qDebug("num:%d,den:%d\n", frameRates->num, frameRates->den);
+        }
+    }
+    
+
+    const int *sampleRatePtr = codec->supported_samplerates;
+    qDebug() << "supported sample rates:";
+    for(; *sampleRatePtr != 0; sampleRatePtr++) {
+        qDebug() << "rate:" << *sampleRatePtr;
+    }
+
+    const enum AVPixelFormat *pixFmtPtr = codec->pix_fmts;
+    if(pixFmtPtr != nullptr) {
+        qDebug() << "supported pix formats:";
+        for(; *pixFmtPtr != AVPixelFormat::AV_PIX_FMT_NONE; pixFmtPtr++) {
+            qDebug() << "pix_fmt:" << (int)(*pixFmtPtr);
+        }
+    }
+    
+    const enum AVSampleFormat *sampleFmtPtr = codec->sample_fmts;
+    if(sampleFmtPtr != nullptr) {
+        qDebug() << "supported sample formats:";
+        for(; *sampleFmtPtr != AVSampleFormat::AV_SAMPLE_FMT_NONE; sampleFmtPtr++) {
+            qDebug() << "fmt: " << av_get_sample_fmt_name(*sampleFmtPtr);
+        }
+    }
+
+    const uint64_t *chanLayoutPtr = codec->channel_layouts;
+    if(chanLayoutPtr != nullptr) {
+        qDebug() << "supported channel layouts:";
+        for(; *chanLayoutPtr != 0; chanLayoutPtr++) {
+            qDebug() << "chanLayout:" << av_get_channel_name(*chanLayoutPtr);
+        }
+    }
+
+    qDebug() << "supported hardware config:";
+    for(int i=0;;i++) {
+        const AVCodecHWConfig *config = avcodec_get_hw_config(codec, i);
+        if(config == nullptr) {
+            break;
+        }
+        qDebug("index:%d, pix_fmt:0x%x, methods:%d, dev_type:0x%x", i, config->pix_fmt, config->methods, config->device_type);
+    }
+    qDebug() << __func__ << ":end";
+}
+
+
 void FFmpegs::aacEncode(AudioEncodeSpec &in,
                         const char *outFilename) {
     // 文件
@@ -97,7 +151,10 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
             qDebug() << "encoder not found aac";
             return;
         }
+        qDebug() << "encoder support aac";
     }
+
+    showAVCodecSupportedInfo(codec);
 
     // libfdk_aac对输入数据的要求：采样格式必须是16位整数
     // 检查输入数据的采样格式

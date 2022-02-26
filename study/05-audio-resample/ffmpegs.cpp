@@ -15,21 +15,26 @@ FFmpegs::FFmpegs() {
 
 }
 
-void FFmpegs::resampleAudio(ResampleAudioSpec &in,
-                            ResampleAudioSpec &out) {
+void FFmpegs::resampleAudio(const ResampleAudioSpec &in,
+                            const ResampleAudioSpec &out) {
+    qDebug() << "inFile: " << in.filename;
+    qDebug("rate:%d,fmt:%d,chan:%x", in.sampleRate, in.sampleFmt, in.chLayout);
+    qDebug() << "outFile:" << out.filename;
+    qDebug("rate:%d,fmt:%d,chan:%x", out.sampleRate, out.sampleFmt, out.chLayout);
+    qDebug("-----------");
     resampleAudio(in.filename, in.sampleRate, in.sampleFmt, in.chLayout,
                   out.filename, out.sampleRate, out.sampleFmt, out.chLayout);
 }
 
 void FFmpegs::resampleAudio(const char *inFilename,
-                            int inSampleRate,
-                            AVSampleFormat inSampleFmt,
-                            int inChLayout,
+                            const int inSampleRate,
+                            const int inSampleFmt,
+                            const uint64_t inChLayout,
 
                             const char *outFilename,
-                            int outSampleRate,
-                            AVSampleFormat outSampleFmt,
-                            int outChLayout) {
+                            const int outSampleRate,
+                            const int outSampleFmt,
+                            const uint64_t outChLayout) {
     // 向下取整，AV_ROUND_DOWN(2.66) = 2
     // qDebug() << av_rescale_rnd(8, 1, 3, AV_ROUND_DOWN);
 
@@ -39,6 +44,13 @@ void FFmpegs::resampleAudio(const char *inFilename,
     // 文件名
     QFile inFile(inFilename);
     QFile outFile(outFilename);
+    qDebug() << "inFile: " << inFilename;
+    qDebug("rate:%d,fmt:%d,chan:%x", inSampleRate, inSampleFmt, inChLayout);
+    qDebug() << "outFile:" << outFilename;
+    qDebug("rate:%d,fmt:%d,chan:%x", outSampleRate, outSampleFmt, outChLayout);
+
+    //
+    
 
     // 输入缓冲区
     // 指向缓冲区的指针
@@ -48,7 +60,7 @@ void FFmpegs::resampleAudio(const char *inFilename,
     // 声道数
     int inChs = av_get_channel_layout_nb_channels(inChLayout);
     // 一个样本的大小
-    int inBytesPerSample = inChs * av_get_bytes_per_sample(inSampleFmt);
+    int inBytesPerSample = inChs * av_get_bytes_per_sample((AVSampleFormat)inSampleFmt);
     // 缓冲区的样本数量
     int inSamples = 1024;
     // 读取文件数据的大小
@@ -62,9 +74,10 @@ void FFmpegs::resampleAudio(const char *inFilename,
     // 声道数
     int outChs = av_get_channel_layout_nb_channels(outChLayout);
     // 一个样本的大小
-    int outBytesPerSample = outChs * av_get_bytes_per_sample(outSampleFmt);
+    int outBytesPerSample = outChs * av_get_bytes_per_sample((AVSampleFormat)outSampleFmt);
     // 缓冲区的样本数量
-    int outSamples = av_rescale_rnd(outSampleRate, inSamples, inSampleRate, AV_ROUND_UP);
+    // int outSamples = av_rescale_rnd(outSampleRate, inSamples, inSampleRate, AV_ROUND_UP);
+    int outSamples = 0;
     /*
      inSampleRate     inSamples
      ------------- = -----------
@@ -72,19 +85,15 @@ void FFmpegs::resampleAudio(const char *inFilename,
 
      outSamples = outSampleRate * inSamples / inSampleRate
      */
-
-    qDebug() << "输入缓冲区" << inSampleRate << inSamples;
-    qDebug() << "输出缓冲区" << outSampleRate << outSamples;
-
-    // 返回结果
+     // 返回结果
     int ret = 0;
 
     // 创建重采样上下文
     SwrContext *ctx = swr_alloc_set_opts(nullptr,
                                          // 输出参数
-                                         outChLayout, outSampleFmt, outSampleRate,
+                                         outChLayout, (AVSampleFormat)outSampleFmt, outSampleRate,
                                          // 输入参数
-                                         inChLayout, inSampleFmt, inSampleRate,
+                                         inChLayout, (AVSampleFormat)inSampleFmt, inSampleRate,
                                          0, nullptr);
     if (!ctx) {
         qDebug() << "swr_alloc_set_opts error";
@@ -98,6 +107,12 @@ void FFmpegs::resampleAudio(const char *inFilename,
         qDebug() << "swr_init error:" << errbuf;
         goto end;
     }
+
+    outSamples = swr_get_out_samples(ctx, inSamples);
+    qDebug() << "输入缓冲区" << inSampleRate << inSamples << inChs;
+    qDebug() << "输出缓冲区" << outSampleRate << outSamples << outChs;
+
+    
 
     /* 指针类型（64bit，8个字节）
     int *;
@@ -125,7 +140,7 @@ void FFmpegs::resampleAudio(const char *inFilename,
               &inLinesize,
               inChs,
               inSamples,
-              inSampleFmt,
+              (AVSampleFormat)inSampleFmt,
               1);
     if (ret < 0) {
         ERROR_BUF(ret);
@@ -139,7 +154,7 @@ void FFmpegs::resampleAudio(const char *inFilename,
               &outLinesize,
               outChs,
               outSamples,
-              outSampleFmt,
+              (AVSampleFormat)outSampleFmt,
               1);
     if (ret < 0) {
         ERROR_BUF(ret);

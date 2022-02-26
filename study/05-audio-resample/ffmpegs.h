@@ -5,12 +5,12 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-typedef struct {
+struct ResampleAudioSpec {
     const char *filename;
     int sampleRate;
-    AVSampleFormat sampleFmt;
-    int chLayout;
-} ResampleAudioSpec;
+    int sampleFmt;
+    uint64_t chLayout;
+};
 
 typedef struct {
     const char* filename;
@@ -22,22 +22,22 @@ typedef struct {
 class FFmpegs {
 public:
     FFmpegs();
-    static void resampleAudio(ResampleAudioSpec &in,
-                              ResampleAudioSpec &out);
+    static void resampleAudio(const ResampleAudioSpec &in,
+                              const ResampleAudioSpec &out);
 
     static void resampleAudio(const char *inFilename,
-                              int inSampleRate,
-                              AVSampleFormat inSampleFmt,
-                              int inChLayout,
+                              const int inSampleRate,
+                              const int inSampleFmt,
+                              const uint64_t inChLayout,
 
                               const char *outFilename,
-                              int outSampleRate,
-                              AVSampleFormat outSampleFmt,
-                              int outChLayout);
+                              const int outSampleRate,
+                              const int outSampleFmt,
+                              const uint64_t outChLayout);
 
-    static void myResampleAudio(MyResampleAudioSpec& in, MyResampleAudioSpec& out);
-    static void myResampleAudio(const char *inFileName, int inSampleRate, AVSampleFormat inSampleFmt, int inChannels
-                            , const char *outFileName, int outSampleRate, AVSampleFormat outFmt, int outChannels);
+    // static void myResampleAudio(MyResampleAudioSpec& in, MyResampleAudioSpec& out);
+    // static void myResampleAudio(const char *inFileName, int inSampleRate, AVSampleFormat inSampleFmt, int inChannels
+    //                         , const char *outFileName, int outSampleRate, AVSampleFormat outFmt, int outChannels);
 };
 
 #endif // FFMPEGS_H
