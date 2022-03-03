@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(16-aac-encode LANGUAGES CXX)
+project(6-aac-encode LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

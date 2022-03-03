@@ -29,6 +29,37 @@ static int check_sample_fmt(const AVCodec *codec,
     return 0;
 }
 
+//ADTS头
+static void get_adts_header_f(AVCodecContext *ctx, uint8_t *adts_header, int aac_length){
+    uint8_t freq_idx = 0;    //0: 96000 Hz  3: 48000 Hz 4: 44100 Hz
+    switch (ctx->sample_rate) {
+        case 96000: freq_idx = 0; break;
+        case 88200: freq_idx = 1; break;
+        case 64000: freq_idx = 2; break;
+        case 48000: freq_idx = 3; break;
+        case 44100: freq_idx = 4; break;
+        case 32000: freq_idx = 5; break;
+        case 24000: freq_idx = 6; break;
+        case 22050: freq_idx = 7; break;
+        case 16000: freq_idx = 8; break;
+        case 12000: freq_idx = 9; break;
+        case 11025: freq_idx = 10; break;
+        case 8000: freq_idx = 11; break;
+        case 7350: freq_idx = 12; break;
+        default: freq_idx = 4; break;
+    }
+ 
+    uint8_t chanCfg = ctx->channels;
+    uint32_t frame_length = aac_length + 7;
+    adts_header[0] = 0xFF;
+    adts_header[1] = 0xF1;
+    adts_header[2] = ((ctx->profile) << 6) + (freq_idx << 2) + (chanCfg >> 2);
+    adts_header[3] = (((chanCfg & 3) << 6) + (frame_length  >> 11));
+    adts_header[4] = ((frame_length & 0x7FF) >> 3);
+    adts_header[5] = (((frame_length & 7) << 5) + 0x1F);
+    adts_header[6] = 0xFC;
+}
+
 // 音频编码
 // 返回负数：中途出现了错误
 // 返回0：编码操作正常完成
@@ -54,6 +85,10 @@ static int encode(AVCodecContext *ctx,
         } else if (ret < 0) { // 其他错误
             return ret;
         }
+
+        uint8_t aac_header[7];
+        get_adts_header_f(ctx, aac_header, pkt->size);
+        outFile.write((char*)aac_header, 7);
 
         // 成功从编码器拿到编码后的数据
         // 将编码后的数据写入文件
@@ -128,6 +163,7 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
 
     // 返回结果
     int ret = 0;
+    int num = 0;
 
     // 编码器
     AVCodec *codec = nullptr;
@@ -176,10 +212,14 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
     ctx->sample_rate = in.sampleRate;
     ctx->sample_fmt = in.sampleFmt;
     ctx->channel_layout = in.chLayout;
+    ctx->channels = av_get_channel_layout_nb_channels(in.chLayout);
     // 比特率
-    ctx->bit_rate = 32000;
+    ctx->bit_rate = 128*1024;
     // 规格
-    ctx->profile = FF_PROFILE_AAC_HE_V2;
+    ctx->profile = FF_PROFILE_AAC_LOW;
+    ctx->flags = AV_CODEC_FLAG_GLOBAL_HEADER;
+    ctx->codec_id = AV_CODEC_ID_AAC;
+    ctx->codec_type = AVMEDIA_TYPE_AUDIO;
 
     // 打开编码器
 //    AVDictionary *options = nullptr;
@@ -240,6 +280,7 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
             // 防止编码器编码了一些冗余数据
             frame->nb_samples = ret / (bytes * ch);
         }
+        qDebug() << "encoding... " << num++;
 
         // 进行编码
         if (encode(ctx, frame, pkt, outFile) < 0) {
