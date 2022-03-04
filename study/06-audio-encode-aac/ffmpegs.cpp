@@ -53,10 +53,10 @@ static void get_adts_header_f(AVCodecContext *ctx, uint8_t *adts_header, int aac
     uint32_t frame_length = aac_length + 7;
     adts_header[0] = 0xFF;
     adts_header[1] = 0xF1;
-    adts_header[2] = ((ctx->profile) << 6) + (freq_idx << 2) + (chanCfg >> 2);
-    adts_header[3] = (((chanCfg & 3) << 6) + (frame_length  >> 11));
+    adts_header[2] = ((ctx->profile) << 6) | (freq_idx << 2) | (chanCfg >> 2);
+    adts_header[3] = (((chanCfg & 3) << 6) | (frame_length  >> 11));
     adts_header[4] = ((frame_length & 0x7FF) >> 3);
-    adts_header[5] = (((frame_length & 7) << 5) + 0x1F);
+    adts_header[5] = (((frame_length & 7) << 5) | 0x1F);
     adts_header[6] = 0xFC;
 }
 
