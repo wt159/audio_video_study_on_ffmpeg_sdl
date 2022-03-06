@@ -60,6 +60,45 @@ static void get_adts_header_f(AVCodecContext *ctx, uint8_t *adts_header, int aac
     adts_header[6] = 0xFC;
 }
 
+static int get_aac_header_info_by_adts(AVCodecContext* ctx, uint8_t* buf, size_t buf_size)
+{
+    uint8_t* adts_header = nullptr;
+    for(size_t i=0; i<buf_size; i++) {
+        if(*(buf+0) = 0xFF && *(buf+1) == 0xF1 && *(buf+7) == 0xFC) {
+            adts_header = &buf[0];
+            break;
+        } else {
+            buf++;
+        }
+    }
+
+    if(!adts_header) {
+        return -1;
+    }
+
+    uint8_t freq_index = (*(buf + 2) >> 2) & 0x0f;
+    switch (freq_index) {
+        case 0: ctx->sample_rate = 96000; break;
+        case 1: ctx->sample_rate = 88200; break;
+        case 2: ctx->sample_rate = 64000; break;
+        case 3: ctx->sample_rate = 48000; break;
+        case 4: ctx->sample_rate = 44100; break;
+        case 5: ctx->sample_rate = 32000; break;
+        case 6: ctx->sample_rate = 24000; break;
+        case 7: ctx->sample_rate = 22050; break;
+        case 8: ctx->sample_rate = 16000; break;
+        case 9: ctx->sample_rate = 12000; break;
+        case 10: ctx->sample_rate = 11025; break;
+        case 11: ctx->sample_rate = 8000; break;
+        case 12: ctx->sample_rate = 7350; break;
+        default: ctx->sample_rate = 44100; break;
+    }
+    qDebug() << "sample rate:" << ctx->sample_rate;
+
+    ctx->channels = (*(buf + 3) >> 6) | (*(buf + 2) & 1) << 2; 
+    qDebug() << "sample chan:" << ctx->channels;
+}
+
 // static int adts_write_frame_header(ADTSContext *ctx,
 //                                    uint8_t *buf, int size, int pce_size)
 // {
@@ -106,6 +145,7 @@ static int encode(AVCodecContext *ctx,
                   AVFrame *frame,
                   AVPacket *pkt,
                   QFile &outFile) {
+    static size_t num = 0;
     // 发送数据到编码器
     int ret = avcodec_send_frame(ctx, frame);
     if (ret < 0) {
@@ -116,6 +156,7 @@ static int encode(AVCodecContext *ctx,
 
     // 不断从编码器中取出编码后的数据
     // while (ret >= 0)
+    qDebug("frame size:%d,chan:%d", frame->nb_samples, frame->channels);
     while (true) {
         ret = avcodec_receive_packet(ctx, pkt);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
@@ -124,6 +165,8 @@ static int encode(AVCodecContext *ctx,
         } else if (ret < 0) { // 其他错误
             return ret;
         }
+
+        qDebug("pkt size:%d,num:%lu", pkt->size, ++num);
 
         uint8_t aac_header[7];
         get_adts_header_f(ctx, aac_header, pkt->size);

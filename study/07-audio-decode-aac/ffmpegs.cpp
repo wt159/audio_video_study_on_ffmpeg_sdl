@@ -20,10 +20,58 @@ FFmpegs::FFmpegs() {
 
 }
 
+static int get_aac_header_info_by_adts(AVCodecContext* ctx, uint8_t* buf, size_t buf_size)
+{
+    uint8_t* adts_header = nullptr;
+    int sample_rate = 0;
+    int channels = 0;
+    int frame_size = 0;
+    for(size_t i=0; i<buf_size; i++) {
+        if(*(buf+0) = 0xFF && *(buf+1) == 0xF1 && *(buf+6) == 0xFC) {
+            adts_header = &buf[0];
+            break;
+        } else {
+            buf++;
+        }
+    }
+
+    if(!adts_header) {
+        qDebug("not find adts header");
+        return -1;
+    }
+
+    uint8_t freq_index = (*(buf + 2) >> 2) & 0x0f;
+    switch (freq_index) {
+        case 0: sample_rate = 96000; break;
+        case 1: sample_rate = 88200; break;
+        case 2: sample_rate = 64000; break;
+        case 3: sample_rate = 48000; break;
+        case 4: sample_rate = 44100; break;
+        case 5: sample_rate = 32000; break;
+        case 6: sample_rate = 24000; break;
+        case 7: sample_rate = 22050; break;
+        case 8: sample_rate = 16000; break;
+        case 9: sample_rate = 12000; break;
+        case 10: sample_rate = 11025; break;
+        case 11: sample_rate = 8000; break;
+        case 12: sample_rate = 7350; break;
+        default: sample_rate = 44100; break;
+    }
+    qDebug() << "sample rate:" << sample_rate;
+
+    channels = (*(buf + 3) >> 6) | (*(buf + 2) & 1) << 2; 
+    qDebug() << "sample chan:" << channels;
+
+    frame_size = (*(buf+3) << 11) | (*(buf+4) << 3) | (*(buf+5) >> 3);
+    frame_size -= 7;
+    qDebug() << "frame size:" << frame_size;
+}
+
 static int decode(AVCodecContext *ctx,
                   AVPacket *pkt,
                   AVFrame *frame,
                   QFile &outFile) {
+    static size_t num = 0;
     // 发送压缩数据到解码器
     int ret = avcodec_send_packet(ctx, pkt);
     if (ret < 0) {
@@ -46,9 +94,24 @@ static int decode(AVCodecContext *ctx,
 //        for (int i = 0; i < frame->channels; i++) {
 //            frame->data[i];
 //        }
+        
+
+        int data_size = av_get_bytes_per_sample(ctx->sample_fmt);
+        if (data_size < 0) {
+            /* This should not occur, checking just for paranoia */
+            fprintf(stderr, "Failed to calculate data size\n");
+            exit(1);
+        }
+        qDebug("chan:%d,samples:%d, linesize:%d, data size:%d,num:%lu", frame->channels, frame->nb_samples, frame->linesize[0], data_size, ++num);
+        // for(int i=0; i<frame->nb_samples; i++)
+        //     for(int j=0; j<frame->channels; j++)
+        //         outFile.write((char*)(frame->data[j]+data_size*i), data_size);
+
+        // 1 channel
+        outFile.write((char *) frame->data[0], frame->nb_samples*data_size);
 
         // 将解码后的数据写入文件
-        outFile.write((char *) frame->data[0], frame->linesize[0]);
+        // outFile.write((char *) frame->data[0], frame->linesize[0]);
     }
 }
 
@@ -150,7 +213,8 @@ void FFmpegs::aacDecode(const char *inFilename,
 
     while ((inLen = inFile.read(inDataArray, IN_DATA_SIZE)) > 0) {
         inData = inDataArray;
-
+        // get_aac_header_info_by_adts(ctx, (uint8_t*)inData, IN_DATA_SIZE);
+        // assert(false);
         while (inLen > 0) {
             // 经过解析器解析
             // 内部调用的核心逻辑是：ff_aac_ac3_parse

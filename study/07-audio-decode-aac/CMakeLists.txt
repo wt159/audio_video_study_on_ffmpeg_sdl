@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(16-aac-encode LANGUAGES CXX)
+project(7-aac-decode LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -56,5 +56,5 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} -static Qt5::Widgets
-  avutil avcodec
+  avutil avcodec avformat
 )
