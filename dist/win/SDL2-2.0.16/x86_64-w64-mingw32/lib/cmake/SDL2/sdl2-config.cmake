@@ -1,6 +1,7 @@
-# sdl2 cmake project-config input for ./configure scripts
+# sdl2 cmake project-config input for ./configure scripts CMAKE_CURRENT_LIST_FILE
 
-set(prefix "E:/FlushBonading/gitee/audio_video_study_on_ffmpeg_sdl/dist/win/SDL2-2.0.16/x86_64-w64-mingw32") 
+# set(prefix "E:/FlushBonading/gitee/audio_video_study_on_ffmpeg_sdl/dist/win/SDL2-2.0.16/x86_64-w64-mingw32")
+string(REPLACE "SDL2/sdl2-config.cmake" "SDL2/../../.." prefix "${CMAKE_CURRENT_LIST_FILE}")
 set(exec_prefix "${prefix}")
 set(libdir "${exec_prefix}/lib")
 set(includedir "${prefix}/include")
