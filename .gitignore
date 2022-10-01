@@ -3,7 +3,8 @@ build/
 .cache
 
 # file 不需要提交的文件
-
+compile_commands.json
+CMakeLists.txt.user
 
 # log 不需要提交的任意包含后缀名为log的文件
 *.log
