@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QFile>
 
-#define FILENAME "E:\\FlushBonading\\gitee\\audio_video_study_on_ffmpeg_sdl\\samples\\music.wav"
+#define FILENAME "../../../samples/music.wav"
 
 /*
 
