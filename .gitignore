@@ -1,6 +1,7 @@
 # dir 不需要提交的目录
 build/
 .cache
+.vscode
 
 # file 不需要提交的文件
 compile_commands.json
