@@ -156,7 +156,7 @@ static int encode(AVCodecContext *ctx,
 
     // 不断从编码器中取出编码后的数据
     // while (ret >= 0)
-    qDebug("frame size:%d,chan:%d", frame->nb_samples, frame->channels);
+    // qDebug("frame size:%d,chan:%d", frame->nb_samples, frame->channels);
     while (true) {
         ret = avcodec_receive_packet(ctx, pkt);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
@@ -166,7 +166,7 @@ static int encode(AVCodecContext *ctx,
             return ret;
         }
 
-        qDebug("pkt size:%d,num:%lu", pkt->size, ++num);
+        // qDebug("pkt size:%d,num:%lu", pkt->size, ++num);
 
         uint8_t aac_header[7];
         get_adts_header_f(ctx, aac_header, pkt->size);
@@ -264,12 +264,23 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
     codec = avcodec_find_encoder_by_name("libfdk_aac");
     if (!codec) {
         qDebug() << "encoder not found libfdk_aac";
+        for(uint32_t n=AV_CODEC_ID_MP2; n<=AV_CODEC_ID_CODEC2; n++) {
+            codec = avcodec_find_encoder((enum AVCodecID)n);
+            if(codec) {
+                qDebug() << "encoder found " << avcodec_get_name((enum AVCodecID)n);
+            } else {
+                qDebug() << "encoder not found " << avcodec_get_name((enum AVCodecID)n);
+            }
+        }
+
+        #if 1
         codec = avcodec_find_encoder(AV_CODEC_ID_AAC);
         if(!codec) {
             qDebug() << "encoder not found aac";
             return;
         }
         qDebug() << "encoder support aac";
+        #endif
     }
 
     showAVCodecSupportedInfo(codec);
@@ -362,7 +373,7 @@ void FFmpegs::aacEncode(AudioEncodeSpec &in,
             // 防止编码器编码了一些冗余数据
             frame->nb_samples = ret / (bytes * ch);
         }
-        qDebug() << "encoding... " << num++;
+        // qDebug() << "encoding... " << num++;
 
         // 进行编码
         if (encode(ctx, frame, pkt, outFile) < 0) {
