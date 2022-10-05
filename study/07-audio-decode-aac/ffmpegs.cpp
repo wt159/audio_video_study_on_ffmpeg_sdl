@@ -102,7 +102,7 @@ static int decode(AVCodecContext *ctx,
             fprintf(stderr, "Failed to calculate data size\n");
             exit(1);
         }
-        qDebug("chan:%d,samples:%d, linesize:%d, data size:%d,num:%lu", frame->channels, frame->nb_samples, frame->linesize[0], data_size, ++num);
+        // qDebug("chan:%d,samples:%d, linesize:%d, data size:%d,num:%lu", frame->channels, frame->nb_samples, frame->linesize[0], data_size, ++num);
         // for(int i=0; i<frame->nb_samples; i++)
         //     for(int j=0; j<frame->channels; j++)
         //         outFile.write((char*)(frame->data[j]+data_size*i), data_size);
@@ -150,6 +150,16 @@ void FFmpegs::aacDecode(const char *inFilename,
     codec = avcodec_find_decoder_by_name("libfdk_aac");
     if (!codec) {
         qDebug() << "decoder not found libfdk_aac";
+        #if 1
+        for(uint32_t n=AV_CODEC_ID_MP2; n<=AV_CODEC_ID_CODEC2; n++) {
+            codec = avcodec_find_decoder((enum AVCodecID)n);
+            if(codec) {
+                qDebug() << "decoder found " << avcodec_get_name((enum AVCodecID)n);
+            } else {
+                qDebug() << "decoder not found " << avcodec_get_name((enum AVCodecID)n);
+            }
+        }
+        #endif
         codec = avcodec_find_decoder(AV_CODEC_ID_AAC);
         if(!codec) {
             qDebug("decoder not found aac");
