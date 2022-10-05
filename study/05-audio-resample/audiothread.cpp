@@ -31,7 +31,7 @@ void showAudioSpec(const ResampleAudioSpec& ras)
 //    free(*ptr);
 //    *ptr = nullptr;
 //}
-#define PUB_PATH "E:\\FlushBonading\\gitee\\audio_video_study_on_ffmpeg_sdl\\samples\\"
+#define PUB_PATH "../../../samples/"
 void AudioThread::run() {
     // 44100_s16le_2 -> 48000_f32le_2 -> 48000_s32le_1 -> 44100_s16le_2
 
