@@ -1,8 +1,9 @@
 #include "playthread.h"
 
-#include <SDL.h>
 #include <QDebug>
 #include <QFile>
+#include <SDL.h>
+
 
 #define FILENAME "../../../samples/music.wav"
 
@@ -17,16 +18,18 @@
 typedef struct {
     int len = 0;
     int pullLen = 0;
-    Uint8 *data = nullptr;
+    Uint8* data = nullptr;
 } AudioBuffer;
 
-PlayThread::PlayThread(QObject *parent) : QThread(parent) {
+PlayThread::PlayThread(QObject* parent)
+    : QThread(parent)
+{
     connect(this, &PlayThread::finished,
-            this, &PlayThread::deleteLater);
-
+        this, &PlayThread::deleteLater);
 }
 
-PlayThread::~PlayThread() {
+PlayThread::~PlayThread()
+{
     disconnect();
     requestInterruption();
     quit();
@@ -36,31 +39,32 @@ PlayThread::~PlayThread() {
 }
 
 // 等待音频设备回调(会回调多次)
-void pull_audio_data(void *userdata,
-                     // 需要往stream中填充PCM数据
-                     Uint8 *stream,
-                     // 希望填充的大小(samples * format * channels / 8)
-                     int len
-                    ) {
+void pull_audio_data(void* userdata,
+    // 需要往stream中填充PCM数据
+    Uint8* stream,
+    // 希望填充的大小(samples * format * channels / 8)
+    int len)
+{
     qDebug() << "pull_audio_data" << len;
 
     // 清空stream（静音处理）
     SDL_memset(stream, 0, len);
 
     // 取出AudioBuffer
-    AudioBuffer *buffer = (AudioBuffer *) userdata;
+    AudioBuffer* buffer = (AudioBuffer*)userdata;
 
     // 文件数据还没准备好
-    if (buffer->len <= 0) return;
+    if (buffer->len <= 0)
+        return;
 
     // 取len、bufferLen的最小值（为了保证数据安全，防止指针越界）
     buffer->pullLen = (len > buffer->len) ? buffer->len : len;
 
     // 填充数据
     SDL_MixAudio(stream,
-                 buffer->data,
-                 buffer->pullLen,
-                 SDL_MIX_MAXVOLUME);
+        buffer->data,
+        buffer->pullLen,
+        SDL_MIX_MAXVOLUME);
     buffer->data += buffer->pullLen;
     buffer->len -= buffer->pullLen;
 }
@@ -89,7 +93,7 @@ void showAudioDriverInfo()
     int drivers = SDL_GetNumAudioDrivers();
     qDebug() << "audio drivers:" << drivers;
 
-    for(int i=0; i<drivers; i++) {
+    for (int i = 0; i < drivers; i++) {
         qDebug("index[%d],name[%s]", i, SDL_GetAudioDriver(i));
     }
     qDebug() << "-----------------";
@@ -100,7 +104,8 @@ SDL播放音频有2种模式：
 Push（推）：【程序】主动推送数据给【音频设备】
 Pull（拉）：【音频设备】主动向【程序】拉取数据
 */
-void PlayThread::run() {
+void PlayThread::run()
+{
     // 初始化Audio子系统
     if (SDL_Init(SDL_INIT_AUDIO)) {
         qDebug() << "SDL_Init error" << SDL_GetError();
@@ -113,10 +118,10 @@ void PlayThread::run() {
     // 音频驱动
     showAudioDriverInfo();
 
-        // 加载wav文件
-        SDL_AudioSpec spec;
+    // 加载wav文件
+    SDL_AudioSpec spec;
     // 指向PCM数据
-    Uint8 *data = nullptr;
+    Uint8* data = nullptr;
     // PCM数据的长度
     Uint32 len = 0;
     if (!SDL_LoadWAV(FILENAME, &spec, &data, &len)) {
@@ -162,7 +167,8 @@ void PlayThread::run() {
     // 存放从文件中读取的数据
     while (!isInterruptionRequested()) {
         // 只要从文件中读取的音频数据，还没有填充完毕，就跳过
-        if (buffer.len > 0) continue;
+        if (buffer.len > 0)
+            continue;
 
         // 文件数据已经读取完毕
         if (buffer.len <= 0) {
